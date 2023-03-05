@@ -1,0 +1,25 @@
+{
+  "name": "parse-web-data",
+  "version": "1.0.0",
+  "description": "Simple CLI parser to getting data from web-pages",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tascen/parse-web-data.git"
+  },
+  "keywords": [
+    "scraper",
+    "web-parser",
+    "html-parser",
+    "cli-app"
+  ],
+  "author": "Тимофеев Александр Дмитриевич",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Tascen/parse-web-data/issues"
+  },
+  "homepage": "https://github.com/Tascen/parse-web-data#readme"
+}
