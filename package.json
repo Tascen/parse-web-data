@@ -4,7 +4,7 @@
   "description": "Simple CLI parser to getting data from web-pages",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "babel-node dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -21,5 +21,11 @@
   "bugs": {
     "url": "https://github.com/Tascen/parse-web-data/issues"
   },
-  "homepage": "https://github.com/Tascen/parse-web-data#readme"
+  "homepage": "https://github.com/Tascen/parse-web-data#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.21.0",
+    "@babel/core": "^7.21.0",
+    "@babel/node": "^7.20.7",
+    "@babel/preset-env": "^7.20.2"
+  }
 }
