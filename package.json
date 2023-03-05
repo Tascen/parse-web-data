@@ -4,7 +4,7 @@
   "description": "Simple CLI parser to getting data from web-pages",
   "main": "dist/index.js",
   "scripts": {
-    "start": "babel-node dist/index.js"
+    "start": "babel-node dist/index.js --config=test/config.js --useStdOutput --outputDir=test/result"
   },
   "repository": {
     "type": "git",
@@ -27,5 +27,9 @@
     "@babel/core": "^7.21.0",
     "@babel/node": "^7.20.7",
     "@babel/preset-env": "^7.20.2"
+  },
+  "dependencies": {
+    "command-line-args": "^5.2.1",
+    "filename-reserved-regex": "^3.0.0"
   }
 }
