@@ -24,4 +24,4 @@ function checkValidFilename(value/*: string*/) {
 }
 
 
-export { getModuleSync }
+export { getModuleSync };
