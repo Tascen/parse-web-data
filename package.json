@@ -30,6 +30,8 @@
   },
   "dependencies": {
     "command-line-args": "^5.2.1",
-    "filename-reserved-regex": "^3.0.0"
+    "filename-reserved-regex": "^3.0.0",
+    "puppeteer": "^19.7.2",
+    "puppeteer-autoscroll-down": "^1.1.1"
   }
 }
