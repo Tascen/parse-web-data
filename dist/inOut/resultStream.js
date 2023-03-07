@@ -7,7 +7,7 @@ const RECORDS_UTIL_CHUNK_TYPE = "utilR";
 const LOGS_CHUNK_TYPE = "logs";
 const LOGS_UTIL_CHUNK_TYPE = "utilL";
 const TYPE_UTIL_CHUNKS_PAIR = {
-  // These pairs with key equal to the type of chunk and value equal to the admited for it type of utility chunk
+  //These pairs with key equal to the type of chunk and value equal to the admited for it type of utility chunk
   [LOGS_CHUNK_TYPE]: LOGS_UTIL_CHUNK_TYPE,
   [RECORD_CHUNK_TYPE]: RECORDS_UTIL_CHUNK_TYPE,
 }
