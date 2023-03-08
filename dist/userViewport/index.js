@@ -62,6 +62,7 @@ const DEFAULT_OPTIONS = {
     timeout: 3000000
   },
 };
+const DEFAULT_USER_ACTIONS_INTERVAL = 1000;
 
 class UserViewport {
   /*
@@ -130,7 +131,7 @@ class UserViewport {
         const executeAction = (prevResolver/*: Promise*/, action/*: T_USER_ACTION*/, callback/*: ()=>void*/)=>{
           const eventName = action[0];
           const targets = action[1];
-          const {timeout = 1000} = action[2];
+          const {timeout = DEFAULT_USER_ACTIONS_INTERVAL} = action[2];
           let promises = [];
           promises[-1] = Promise.resolve();
 
