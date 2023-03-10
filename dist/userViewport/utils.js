@@ -21,7 +21,7 @@ function joinToKeyFrom(...args/*: Array<string>*/)/*: string*/ {
 }
 
 function getAttribute(html/*: string*/, name/*: string*/)/*: string*/ {
-  return html.match(new RegExp(`${name}=['"\`][0-9]*?['"\`]`, "m"))[0].slice(`${name}="`.length, -1)
+  return html.match(new RegExp(`${name}=['"\`][0-9]*?['"\`]`, "m"))?.[0].slice(`${name}="`.length, -1) || undefined;
 }
 
 

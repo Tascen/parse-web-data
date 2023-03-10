@@ -99,6 +99,7 @@ class UserViewport {
       selector,
       flags,
       {//Defined only necessary fields, to reduce stringified object entities
+        defaultUserActionsInterval: DEFAULT_USER_ACTIONS_INTERVAL,
         queriedEleCashIdAttrName: this.options.queriedEleCashIdAttrName,
         cachedCount: tab.querySelectorsCashedCount.current,
         htmlId: !queryHtmlContext ? undefined : Number(getAttribute(queryHtmlContext, this.options.queriedEleCashIdAttrName)),
@@ -131,7 +132,7 @@ class UserViewport {
         const executeAction = (prevResolver/*: Promise*/, action/*: T_USER_ACTION*/, callback/*: ()=>void*/)=>{
           const eventName = action[0];
           const targets = action[1];
-          const {timeout = DEFAULT_USER_ACTIONS_INTERVAL} = action[2];
+          const {timeout = context.defaultUserActionsInterval} = action[2];
           let promises = [];
           promises[-1] = Promise.resolve();
 
@@ -143,7 +144,7 @@ class UserViewport {
           Promise.all(promises.slice(0)).then(callback);
         };
         const lastActionsGroupHandler = ()=>{
-          const elements = flags.all ? [].slice.call(htmlContext.querySelectorAll(selector)) : [htmlContext.querySelector(selector)];
+          const elements = flags.all ? [].slice.call(htmlContext.querySelectorAll(selector)) : [htmlContext.querySelector(selector)].filter(ele=>ele);
           const {res, newCachedCount} = elements.reduce(
             (reduced, ele)=>{
               let id = ele.getAttribute(context.queriedEleCashIdAttrName);
