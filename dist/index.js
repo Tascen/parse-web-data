@@ -4,6 +4,7 @@ import commandLineArgs from "command-line-args";
 import { T_CLI_ARGUMENTS, dirname } from "./arguments";
 import { ResultStream, prepareOutputDir, RECORD_CHUNK_TYPE, LOGS_CHUNK_TYPE } from "./inOut";
 import UserViewport from "./userViewport";
+import { getSourceUrls, splitIntoRecords, parseRecordData } from "./parse";
 
 
 
@@ -36,40 +37,118 @@ const userViewport = new UserViewport();
   await userViewport.open();
 
   console.log('it`s test section runed with args:', OPTIONS);
-  const source = "https://www.ozon.ru/product/kreslo-oliviya-1-sht-64h88h100-sm-597198440/?_bctx=CAYQ54IY&advert=SzzkTTJTVeR6IiqoqZwezJbD_IK2y8IXV1EbLWSIPJEYSKH1y7ZiN0F6bXHKae084R5kZ35Jl_VAwXccr6hYiZS_hm1QntrCHLhBrBvzFP8MuvFzH6RZnLo4bS0QZxVv2ihp1SUCB2P4lFsqH41wcKaOkkqgcQZo0nwqCteSp6ikE5EzgwnA8rDbAXYbQ1G4y14dMDeiVR_tSROxReDUFLimJ5lb3-WXMrmbAcg-n6qkigxtxd-kWcaQrjfQ_pvTG-glbb-XZQ7bGepjtEbALZlNMtFnvlyEt5AgU-sr7Xq-KAYYVabsYA7YJG6sZvIuwid5kTOHLKTCDJHUpb-fDOvGaFxZourrNO26WuFR4vtbpWBhxQR91KJEP_DSeGcy_btWSvOCf7V9ChBygegXZ-Xs_jfJhLhx-EBRCe9VeaQBmLrG5Hh0K-1v5jf8e14-OBC6VzW17ggvoboeUGVILEZ7S3WbZwpBkGM_coUhqvNlW8h7Zn6pyijKF-5_Ts0fEQl74l9G5G_zpTy4VI23QZ31H-ZAU6mEYMq6wdwMlQWb_Ek86cwNbW0bYkNMsbegJ2X_hSY_VWSPQ7wE2R_1qYjToTzCQ7MsaeqO7Lu6nPawRWfDsUWwddtCiQrAwBfdqMInz6CzNvHaqv0cSORi-8M1ArNlrT4y75sFFRNh4DpaDEtwPNmzvac2GRnb0tG0ICCsWmZHQgi9o7MbVCzIbw&avtc=1&avte=2&avts=1677934500&sh=u57d2tCyvQ";
-  const selectors = {
-    "containers": "*[data-widget='webCurrentSeller'], *[data-widget='tagList']",
-    "secondContainerHeading": "h2",
-    "nameHeading": "*[data-widget='webProductHeading'] h1",
-    "name": "*[data-widget='webProductHeading']",
+  const USE_PREPARED_SOURCES = true;
+  const config = {
+    origin: "https://www.ozon.ru",
+    sources: (USE_PREPARED_SOURCES
+      ? [
+        "https://www.ozon.ru/highlight/divany-i-kresla-393575/?page=2&tf_state=Nhc5tjzNg1-pFFGGdbsZ6lCDhEgdMkct7xgbZf5zznnF6OMG",
+        // "https://www.ozon.ru/highlight/divany-i-kresla-393575/?page=3&tf_state=Nhc5tjzNg1-pFFGGdbsZ6lCDhEgdMkct7xgbZf5zznnF6OMG",
+      ]
+      : {
+        "start": "https://www.ozon.ru/category/kresla-15019/",
+        "next": "*[data-widget='megaPaginator'] > *:nth-last-child(1) a ~ a[href]:not(:nth-last-child(1)):not(:nth-child(n+7))"
+      }
+    ),
 
-    "cover": "*[data-widget='webGallery'] img[fetchpriority='high']",
+    records: {
+      seporator: "*[data-widget='searchResultsV2'] > * > *:not(:nth-child(n+3)) a:has(img[src*='jpg'])",
+      separateIntoSources: true,
+      limit: 2,
+      useHtmlInterface: true,
+
+      store: {
+        "characteristics": [
+          "#section-characteristics > *:nth-child(2)",
+          {
+            forEach: false,
+            current: ($, node)=>Object.fromEntries([].slice.call(node.children()).map((child)=>[
+              $(child.children[0]).text(),
+              [].slice.call($('dl', child))
+                .reduce((res, {children: [dt, dd]})=>{
+                  res[$(dt).text().replaceAll(/:( )*$/g, '').trim()] = $(dd).text();
+                  return res
+                }, {})
+            ]))
+          }
+        ]
+      },
+      scheme: {
+        "source": "@source",
+
+        "name": "*[data-widget='webProductHeading']",
+        "desc": [
+          "#section-description",
+          (...[, , res])=>(res
+            .replaceAll(/\\n/g, '')
+            .trim()
+            .replace(/[!]?Показать полностью[ \\s]*$/m, '')
+            .replace(/^[ \\s]*Описание[ \\s]*/m, '')
+            .trim()
+            .replace(/^[ \\s]*О товаре[ \\s]*/m, '')
+          ),
+        ],
+        "rate": [
+          "*[data-widget='webReviewProductScore'] *[style*='width']",
+          (...[, node])=>(node.css('width').slice(0, -1) / 20),
+        ],
+        "cover": [
+          {
+            queryAll: true,
+            queryAfterEachAction: true,
+            current: [
+              "@emit('click', '*[data-widget=\'webGallery\'] *[data-index]:not(:nth-child(n+5))', {dispatchForAll: true}, '*[data-widget=\'webGallery\'] img[fetchpriority=\'high\']')",
+            ]
+          },
+          {
+            forEach: true,
+            current: (...[, node])=>(node.attr("src"))
+          }
+        ],
+
+        "warrantyTime": "@store('characteristics/Дополнительные/Гарантийный срок')",
+      }
+    }
   };
-  const preUserActions = [
-    ["click", "*[data-widget='webGallery'] *[data-index]:not(:nth-child(n+5))", {dispatchForAll: true, /*timeout = 1000*/}]
-  ];
+  const utils = {
+    async simpleQuery({url}, selector, {nodeHtml: htmlContext = ""}, {queryAll}) {
+      return [await userViewport.querySelector(
+        {url, html: htmlContext},
+        selector,
+        {all: !!queryAll}
+      )].flat(1);
+    },
+    async queryWithUserAction({url}, eventName, targetSelector, {nodeHtml: htmlContext = ""}, {dispatchForAll}, observedSelector, {queryAll, queryAfterEachAction}) {
+      return [await userViewport.querySelector(
+        {url, html: htmlContext},
+        observedSelector,
+        {all: !!queryAll, queryAfterEachAction: !!queryAfterEachAction, preUserActions: [[eventName, targetSelector, {dispatchForAll}]]}
+      )].flat(1);
+    }
+  }
 
-  // const id = "";
-  const {html: recordPage, id} = await userViewport.getPageContent({url: source});
-  console.log("recordPage: ", id, "> ", recordPage.slice(0, 8), "\n");
+  const getSourceUrlsRes = await getSourceUrls.call({config, utils});
+  console.log("getSourceUrls: ", getSourceUrlsRes, "\n");
 
-  const {res: [labelHeading]} = await userViewport.querySelector({url: source, id}, selectors.nameHeading, {all: false});
-  console.log("labelHeading: ", id, "> ", labelHeading, "\n");
+  await (async function loop(i) {
+    if ( !(i in getSourceUrlsRes) ) {return}
+    const url = getSourceUrlsRes[i];
 
-  const {res: [label]} = await userViewport.querySelector({url: source, id}, selectors.name, {all: false});
-  console.log("label: ", id, "> ", label, "\n");
+    const {current: items, isUrls} = await splitIntoRecords.call({config, utils}, {url});
+    console.log("splitIntoRecords: ", url, "->", {current: items, isUrls}, "\n");
 
-  const containers = await userViewport.querySelector({url: source, id}, selectors.containers, {all: true});
-  console.log("containers: ", id, "> ", Object.entries(containers).filter(([key])=>!["html", "pageHtml"].includes(key)), "\n");
+    await (async function subLoop(j) {
+      if ( !(j in items) ) {return}
+      const subUrl = isUrls ? items[j] : url;
 
-  const {res: [prevCover]} = await userViewport.querySelector({url: source, id}, selectors.cover, {all: false});
-  console.log("prevCover: ", id, "> ", prevCover, "\n");
+      const parseRecordDataRes = await parseRecordData.call({config, utils}, {url: subUrl, html: isUrls ? undefined : items[j]});
+      console.log("parseRecordData: ", url, "->", parseRecordDataRes, "\n");
 
-  const newResultedCover = await userViewport.querySelector({url: source, id}, selectors.cover, {all: false, preUserActions});
-  console.log("newResultedCover without eacher: ", id, "> ", newResultedCover.map(({res, ...item})=>({keys: Object.keys(item), res})), "\n");
+      await subLoop(j + 1);
+    })(0);
 
-  const newCovers = await userViewport.querySelector({url: source, id}, selectors.cover, {all: true, queryAfterEachAction: true, preUserActions});
-  console.log("newCovers: ", id, "> ", newCovers.map(({res, ...item})=>({keys: Object.keys(item), res})), "\n");
+    await loop(i + 1);
+  })(0)
 
   process.exit();
 })()
