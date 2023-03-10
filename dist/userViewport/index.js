@@ -91,7 +91,7 @@ class UserViewport {
       html: await page.content(),
     };
   }
-  /*public*/async querySelector({html: queryHtmlContext, ...identifiers}/*: I_TAB_IDENTIFIERS & {html?: T_HTML}*/ = {}, selector/*: T_SELECTOR*/, flags/*: I_QUERY_SELECTOR_FLAGS*/ = {})/*: Promise<(I_QUERY_SELECTOR_FLAGS["preUserActions"] extends undefined ? T_QUERY_SELECTOR_RESULT_VARIANT_2 : T_QUERY_SELECTOR_RESULT_VARIANT_1) | never >*/ {
+  /*public*/async querySelector({html: queryHtmlContext, ...identifiers}/*: I_TAB_IDENTIFIERS & {html?: T_HTML}*/ = {}, selector/*: T_SELECTOR*/, flags/*: I_QUERY_SELECTOR_FLAGS*/ = {})/*: Promise<{id: T_ID; current: (I_QUERY_SELECTOR_FLAGS["preUserActions"] extends undefined ? T_QUERY_SELECTOR_RESULT_VARIANT_2 : T_QUERY_SELECTOR_RESULT_VARIANT_1)} | never >*/ {
     this.checkCanUseTab(identifiers);
 
     const {id, page, isNew: isNewTab, ...tab} = !identifiers.id ? (await this.openTab(identifiers.url)) : {id: identifiers.id, ...this.getTab(identifiers.id, identifiers.url)};
@@ -236,7 +236,10 @@ class UserViewport {
       });
 
     tab.querySelectorsCashedCount.current = newCachedCount;
-    return flags.preUserActions?.length ? nodes : nodes[0];
+    return {
+      id,
+      current: flags.preUserActions?.length ? nodes : nodes[0]
+    };
   }
   /*public*/async closeTab(identifiers/*: I_TAB_IDENTIFIERS*/ = {})/*: Promise<void>*/ {
     this.checkCanUseTab(identifiers);
