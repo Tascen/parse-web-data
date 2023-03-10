@@ -42,7 +42,7 @@ type T_QUERY_SELECTOR_RESULT_VARIANT_1 = {
   pageHtml: T_PAGE_BODY_HTML;
   html: T_HTML;
   res: Array<T_HTML>;
-}; //t used when unspecified I_QUERY_SELECTOR_FLAGS["preUserActions"]
+}; //It used when unspecified I_QUERY_SELECTOR_FLAGS["preUserActions"]
 */
 
 const DEFAULT_USER_AGENTS = ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"];
@@ -91,7 +91,7 @@ class UserViewport {
       html: await page.content(),
     };
   }
-  /*public*/async querySelector({html: queryHtmlContext, ...identifiers}/*: I_TAB_IDENTIFIERS & {html?: T_HTML}*/ = {}, selector/*: T_SELECTOR*/, flags/*: I_QUERY_SELECTOR_FLAGS*/ = {})/*: Promise<{id: T_ID; current: (I_QUERY_SELECTOR_FLAGS["preUserActions"] extends undefined ? T_QUERY_SELECTOR_RESULT_VARIANT_2 : T_QUERY_SELECTOR_RESULT_VARIANT_1)} | never >*/ {
+  /*public*/async querySelector({html: queryHtmlContext, ...identifiers}/*: I_TAB_IDENTIFIERS & {html?: T_HTML}*/ = {}, selector/*: T_SELECTOR*/, flags/*: I_QUERY_SELECTOR_FLAGS*/ = {})/*: Promise<{id: T_ID, current: (I_QUERY_SELECTOR_FLAGS["preUserActions"] extends undefined ? T_QUERY_SELECTOR_RESULT_VARIANT_2 : T_QUERY_SELECTOR_RESULT_VARIANT_1)} | never >*/ {
     this.checkCanUseTab(identifiers);
 
     const {id, page, isNew: isNewTab, ...tab} = !identifiers.id ? (await this.openTab(identifiers.url)) : {id: identifiers.id, ...this.getTab(identifiers.id, identifiers.url)};

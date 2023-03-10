@@ -11,7 +11,7 @@ function getFullPath(/*this: {dirname: string}, */foldername/*: string*/)/*: str
   return path.resolve(this.dirname, foldername);
 }
 
-async function prepareOutputDir(/*this: {dirname: string}, */foldername/*: string*/)/*: Promise<{recordsFilename: string; logsFilename: string}>*/ {
+async function prepareOutputDir(/*this: {dirname: string}, */foldername/*: string*/)/*: Promise<{recordsFilename: string, logsFilename: string}>*/ {
   let recordsHeadResolve, recordsHeadReject, recordsPromise = new Promise((res, rej)=>{ recordsHeadResolve = res; recordsHeadReject = rej; })
   let logsHeadResolve, logsHeadReject, logsPromise = new Promise((res, rej)=>{ logsHeadResolve = res; logsHeadReject = rej; })
   const res = {
