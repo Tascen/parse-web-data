@@ -1,4 +1,4 @@
-import { Duplex, Transform } from "stream";
+import { /*Write, Read*/Duplex, Transform } from "stream";
 
 
 
@@ -15,6 +15,8 @@ const TYPE_UTIL_CHUNKS_PAIR = {
 class ResultStream extends Duplex {
   /*
   private isLastData: boolean = false;
+  private methodBindWithEndDidCall: boolean = false;
+  private endPipesPromises: Array<Promise> = [];
   */
 
 
@@ -54,6 +56,21 @@ class ResultStream extends Duplex {
       },
     });
   }
+  /*public*/bindWithEnd(...streams/*Array<Write | Read | Duplex | Transform>*/) {
+    if ( !(this.methodBindWithEndDidCall = !this.methodBindWithEndDidCall) ) {throw new Error("Method 'bindWithEnd' can`t be called again, this method is called once for avoid errors and unexpected logic")}
+    this.endPipesPromises = streams.map((stream)=>(new Promise((resolve, reject)=>{
+      stream.on("finish", ()=>resolve());
+      stream.on("error", (err)=>reject(err));
+    })));
+  }
+  /*public*/on(eventName, callback, ...args) {
+    if (eventName === "finishPipeLine") {
+      Promise.all(this.endPipesPromises).then(()=>callback());
+      return null;
+    } else {
+      return super.on.apply(this, [eventName, callback, ...args]);
+    }
+  }
   /*public*/end() {
     this.isLastData = true;
     return super.end.apply(this, arguments);
@@ -69,6 +86,8 @@ class ResultStream extends Duplex {
   constructor() {
     super({allowHalfOpen: false, readableObjectMode: true, writableObjectMode: true});
     this.isLastData = false;
+    this.methodBindWithEndDidCall = false;
+    this.endPipesPromises = [];
   }
 }
 
